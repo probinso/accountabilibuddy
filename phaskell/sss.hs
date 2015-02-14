@@ -4,22 +4,14 @@
 import System.Random
 import Data.List
 
-powTimesX :: (Num a, Integral b) => a -> b -> a -> a
-powTimesX c p x = (c ^ p) * x
-
 coeficients2poly :: (Num a) => [a] -> a -> a
 coeficients2poly cx = coeficients2value cx
 
+-- this is horners method for computing polynomials
 coeficients2value :: (Num a) => [a] -> a -> a
-coeficients2value cx x = coeficients2value' cx ((length cx) - 1) x
+coeficients2value cx x = foldl1 (\a b -> x*a + b) cx
 
-coeficients2value' :: (Num a, Integral b) => [a] -> b -> a -> a
-coeficients2value' (c:[]) _ _ = c
-coeficients2value' (c:xs) p x =
-  (powTimesX c p x) + 
-  (coeficients2value' xs (p - 1) x)
-
-
+-- I don't really understand this code for random lists.
 defaultGen = mkStdGen 11
 randomList :: Int -> StdGen -> [Int]
 randomList n = take n . unfoldr (Just . random)
@@ -31,9 +23,9 @@ msg2poly degree message =
   let
     cs = randomList degree defaultGen
   in
-    coeficients2poly $ reverse (message:cs)
+    coeficients2poly $ cs ++ [message]
 
-
+-- Primary method to produce cryptographically shareable points from message
 msg2shares :: Int -> Int -> Int -> [Share]
 msg2shares k n m =
   let
@@ -57,6 +49,9 @@ getY s = snd s
 
 clean :: Eq a => a -> [a] -> [a]
 clean x xs = filter (\a -> a /= x) $ nub xs
+
+
+
 
 
 {-
