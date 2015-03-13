@@ -1,5 +1,13 @@
 #!/usr/bin/runghc
--- file: sss.hs
+{- file: sss.hs
+ - ----------------------------------------------------------------------------
+ - "THE BEER-WARE LICENSE" (Revision 42):
+ - <pmoss.robinson@gmail.com> wrote this file.  As long as you retain this 
+ - notice you can do whatever you want with this stuff. If we meet some day, 
+ - and you think this stuff is worth it, you can buy me a beer in return.
+ -   Philip Robinson
+ - ----------------------------------------------------------------------------
+ -}
 
 import System.Random
 import Data.List
@@ -40,6 +48,25 @@ main =
     points = msg2shares 4 7 1000
   in  putStrLn $ show points
 
+--points2message :: [Share] -> Int
+points2message points = points2value points 0
+
+--points2value :: [Share] -> Fractional -> Num
+points2value points x = foldr (+) $ map (\p -> l p points x) points
+
+l point ps x =
+  let
+    yVal = getY point
+    j:mx = (getX point) : (map getX $ clean point ps)
+  in
+    yVal * l' j mx x
+
+-- l' :: Fractional a => a -> [a] -> a -> a
+l' j mx x = foldr (*) $ map (\m -> l'' j m x) mx
+
+-- l'' :: Fractional a => a -> a -> a -> a
+l'' j m x = (x - m)/(j - m)
+
 
 getX :: Share -> Int
 getX s = fst s
@@ -49,9 +76,6 @@ getY s = snd s
 
 clean :: Eq a => a -> [a] -> [a]
 clean x xs = filter (\a -> a /= x) $ nub xs
-
-
-
 
 
 {-
