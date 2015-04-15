@@ -45,14 +45,20 @@ msg2shares k n m =
 main =
   let
     points = msg2shares 4 7 1000
-  in  putStrLn $ show points
-
---points2message :: [Share] -> Int
-points2message points = points2value points 0
+    message = points2message points
+  in  putStrLn $ show message
 
 
---points2value :: [Share] -> Fractional -> Num
-points2value points = \x -> foldr1 addFunctions $ map (\p -> l p points x) points
+points2message :: (Eq b, Fractional b) => [(b, b)] -> b
+points2message points = points2poly points 0
+
+
+points2poly :: (Eq b, Fractional b) => [(b, b)] -> b -> b
+points2poly points =
+  let
+    ljs = map (\p -> l p points) points
+  in
+    \x -> foldr1 addFunctions ljs x
 
 addFunctions :: (Monad m, Num b) => m b -> m b -> m b
 addFunctions a b = do
