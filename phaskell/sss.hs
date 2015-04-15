@@ -67,6 +67,7 @@ addFunctions a b = do
   return (x+y)
 
 
+l :: (Eq a, Fractional a) => (a, a) -> [(a, a)] -> a -> a
 l point ps =
   let
     yVal = snd point
