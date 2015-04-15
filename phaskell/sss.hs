@@ -53,31 +53,37 @@ main =
 points2message points = points2value points 0
 
 --points2value :: [Share] -> Fractional -> Num
-points2value points x = foldr (+) $ map (\p -> l p points x) points
+points2value points = \x -> foldr (+) $ map (\p -> l p points x) points
 
-l point ps x =
+l point ps =
   let
-    yVal = getY point
-    j:mx = (getX point) : (map getX $ clean point ps)
+    yVal = snd point
+    j:mx = (fst point) : (map fst $ clean point ps)
   in
-    yVal * l' j mx x
-
--- l' :: Fractional a => a -> [a] -> a -> a
-l' j mx x = foldr (*) $ map (\m -> l'' j m x) mx
-
--- l'' :: Fractional a => a -> a -> a -> a
-l'' j m x = (x - m)/(j - m)
+    yVal * (l' j mx)
 
 
-getX :: Share -> Int
-getX s = fst s
+--l' :: Fractional a -> [a] -> (a -> a)
 
-getY :: Share -> Int
-getY s = snd s
+l' j mx = foldr1 (*) $ map (\m -> l'' j m) mx
+
+--l'' :: Fractional a => a -> a -> a -> a
+l'' j m = \x -> (x - m)/(j - m)
 
 clean :: Eq a => a -> [a] -> [a]
 clean x xs = filter (\a -> a /= x) $ nub xs
 
+addStuff = do
+  a <- (*2)
+  b <- (+10)
+  return (a*b)
+  
+f c = do
+  a <- (*c)
+  b <- (+c)
+  return $ a + b
+-- \x -> foldl f x [1, 2, 3, 4, 5] :: Num b => b -> b
+-- (*2) >>= \a -> ...
 
 {-
 --l :: Share -> [Share] -> Int -> Int
