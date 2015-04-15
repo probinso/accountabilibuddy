@@ -83,7 +83,7 @@ l' :: Fractional a => a -> [a] -> (a -> a)
 l' j mx = foldr1 multFunctions $ map (\m -> l'' j m) mx
 
 multFunctions :: (Monad m, Num b) => m b -> m b -> m b
-multFunctions a b = liftM2 (+*) a b
+multFunctions a b = liftM2 (*) a b
 
 
 l'' :: Fractional a => a -> a -> a -> a
