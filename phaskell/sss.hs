@@ -1,25 +1,11 @@
-{- file: sss.hs
- - ----------------------------------------------------------------------------
- - "THE BEER-WARE LICENSE" (Revision 42):
- - <pmoss.robinson@gmail.com> wrote this file.  As long as you retain this 
- - notice you can do whatever you want with this stuff. If we meet some day, 
- - and you think this stuff is worth it, you can buy me a beer in return.
- -   Philip Robinson
- - 
- - 
- - ----------------------------------------------------------------------------
- -}
-
 import System.Random
 import Data.List
 import Control.Monad
 
-coeficients2poly :: (Num a) => [a] -> a -> a
-coeficients2poly cx = coeficients2value cx
 
 -- this is horners method for computing polynomials
-coeficients2value :: (Num a) => [a] -> a -> a
-coeficients2value cx x = foldl1 (\a b -> x*a + b) cx
+coeficients2poly :: (Num a) => [a] -> a -> a
+coeficients2poly cx x = foldl1 (\a b -> x*a + b) cx
 
 -- I don't really understand this code for random lists.
 defaultGen = mkStdGen 11
@@ -38,7 +24,7 @@ msg2shares :: Int -> Int -> Int -> [(Int, Int)]
 msg2shares k n m =
   let
     p = msg2poly (k - 1) m
-    xs = randomList n defaultGen
+    xs = [1..n]
   in
     map (\x -> (x, p x)) xs
 
