@@ -1,40 +1,34 @@
 import System.Random
 import Data.List
 import Control.Monad
-import Debug.Trace
-import Text.Printf
+
+-- I don't really understand this code for random lists.
+defaultGen = mkStdGen 11
+randomList :: Int -> StdGen -> [Integer]
+randomList n = take n . unfoldr (Just . random)
 
 
 -- this is horners method for computing polynomials
 coeficients2poly :: (Num a) => [a] -> a -> a
 coeficients2poly cx x = foldl1 (\a b -> x*a + b) cx
 
--- I don't really understand this code for random lists.
-defaultGen = mkStdGen 11
-randomList :: Int -> StdGen -> [Int]
-randomList n = take n . unfoldr (Just . random)
 
-msg2poly :: Int -> Int -> Int -> Int
-msg2poly degree message =
-  let
-    cs = randomList degree defaultGen
-    poly = coeficients2poly $ cs ++ [message]
-    dbg x = printf "f(%d) = %d\n" x $ poly x
-  in
-    trace (dbg 0) poly
+msg2poly :: Int -> Integer -> Integer -> Integer
+msg2poly degree message = coeficients2poly $ cs ++ [message]
+  where cs = randomList degree defaultGen
 
     
 -- Primary method to produce cryptographically shareable points from message
-msg2shares :: Int -> Int -> Int -> [(Int, Int)]
+msg2shares :: Int -> Int -> Integer -> [(Integer, Integer)]
 msg2shares k n m =
   let
     p = msg2poly (k - 1) m
-    xs = [1..n]
+    xs = map fromIntegral [1..n]
   in
     map (\x -> (x, p x)) xs
 
 
-shares2points :: [(Int, Int)] -> [(Rational, Rational)]
+shares2points :: [(Integer, Integer)] -> [(Rational, Rational)]
 shares2points = map share2point
   where
     -- share2point :: (Int, Int) -> (Rational, Rational)
@@ -43,11 +37,13 @@ shares2points = map share2point
 
 main =
   let
-    points = shares2points $ msg2shares 3 5 1000
-    message = points2message points
+    k = 4
+    n = 10
+    points = shares2points $ msg2shares k n 1234
+    message = points2message $ take k $ reverse points
   in do
-    putStrLn $ show points
-    putStrLn $ show message
+    print points
+    print message
 
 
 
