@@ -1,6 +1,8 @@
 import System.Random
 import Data.List
 import Control.Monad
+import Debug.Trace
+import Text.Printf
 
 
 -- this is horners method for computing polynomials
@@ -16,9 +18,12 @@ msg2poly :: Int -> Int -> Int -> Int
 msg2poly degree message =
   let
     cs = randomList degree defaultGen
+    poly = coeficients2poly $ cs ++ [message]
+    dbg x = printf "f(%d) = %d\n" x $ poly x
   in
-    coeficients2poly $ cs ++ [message]
+    trace (dbg 0) poly
 
+    
 -- Primary method to produce cryptographically shareable points from message
 msg2shares :: Int -> Int -> Int -> [(Int, Int)]
 msg2shares k n m =
@@ -38,9 +43,11 @@ shares2points = map share2point
 
 main =
   let
-    points = shares2points $ msg2shares 4 7 1000
+    points = shares2points $ msg2shares 3 5 1000
     message = points2message points
-  in  putStrLn $ show message
+  in do
+    putStrLn $ show points
+    putStrLn $ show message
 
 
 
