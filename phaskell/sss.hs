@@ -20,13 +20,11 @@ msg2poly degree message = coeficients2poly $ cs ++ [message]
 
 -- Primary method to produce cryptographically shareable points from message
 msg2shares :: Int -> Int -> Integer -> [(Integer, Integer)]
-msg2shares k n m =
-  let
+msg2shares k n m = map (\x -> (x, p x)) xs
+  where
     p = msg2poly (k - 1) m
     xs = map fromIntegral [1..n]
-  in
-    map (\x -> (x, p x)) xs
-
+    
 
 shares2points :: [(Integer, Integer)] -> [(Rational, Rational)]
 shares2points = map share2point
@@ -51,24 +49,20 @@ points2message points = floor $ points2poly points 0
 
 
 points2poly :: (Eq b, Fractional b) => [(b, b)] -> b -> b
-points2poly points =
-  let
+points2poly points = \x -> foldr1 addFunctions ljs x
+  where
     ljs = map (\p -> l p points) points
-  in
-    \x -> foldr1 addFunctions ljs x
 
 addFunctions :: (Monad m, Num b) => m b -> m b -> m b
 addFunctions a b = liftM2 (+) a b
 
 
 l :: (Eq a, Fractional a) => (a, a) -> [(a, a)] -> a -> a
-l point ps =
-  let
+l point ps = \x -> yVal * (l' j mx) x
+  where
     yVal = snd point
     j:mx = (fst point) : (map fst $ clean point ps)
-  in
-    \x -> yVal * (l' j mx) x
-
+    
 
 l' :: Fractional a => a -> [a] -> (a -> a)
 l' j mx = foldr1 multFunctions $ map (l'' j) mx
