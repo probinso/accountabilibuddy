@@ -17,7 +17,7 @@ msg2poly :: Int -> Integer -> Integer -> Integer
 msg2poly degree message = coeficients2poly $ cs ++ [message]
   where cs = randomList degree defaultGen
 
-    
+
 -- Primary method to produce cryptographically shareable points from message
 msg2shares :: Int -> Int -> Integer -> [(Integer, Integer)]
 msg2shares k n m =
@@ -46,9 +46,8 @@ main =
     print message
 
 
-
-points2message :: (Eq b, Fractional b) => [(b, b)] -> b
-points2message points = points2poly points 0
+points2message :: (Integral b, RealFrac a) => [(a, a)] -> b
+points2message points = floor $ points2poly points 0
 
 
 points2poly :: (Eq b, Fractional b) => [(b, b)] -> b -> b
