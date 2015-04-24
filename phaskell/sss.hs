@@ -7,6 +7,8 @@ defaultGen = mkStdGen 11
 randomList :: Int -> StdGen -> [Integer]
 randomList n = take n . unfoldr (Just . random)
 
+clean :: Eq a => a -> [a] -> [a]
+clean x xs = filter (\a -> a /= x) $ nub xs
 
 -- this is horners method for computing polynomials
 coeficients2poly :: (Num a) => [a] -> a -> a
@@ -24,12 +26,11 @@ msg2shares k n m = map (\x -> (x, p x)) xs
   where
     p = msg2poly (k - 1) m
     xs = map fromIntegral [1..n]
-    
+
 
 shares2points :: [(Integer, Integer)] -> [(Rational, Rational)]
 shares2points = map share2point
   where
-    -- share2point :: (Int, Int) -> (Rational, Rational)
     share2point (a, b) = (fromIntegral a, fromIntegral b)
 
 
@@ -37,10 +38,10 @@ main =
   let
     k = 4
     n = 10
-    points = shares2points $ msg2shares k n 1234
-    message = points2message $ take k $ reverse points
+    shares = msg2shares k n 1234
+    message = points2message $ take k $ reverse $ shares2points shares
   in do
-    print points
+    print shares
     print message
 
 
@@ -62,7 +63,7 @@ l point ps = \x -> yVal * (l' j mx) x
   where
     yVal = snd point
     j:mx = (fst point) : (map fst $ clean point ps)
-    
+
 
 l' :: Fractional a => a -> [a] -> (a -> a)
 l' j mx = foldr1 multFunctions $ map (l'' j) mx
@@ -73,9 +74,3 @@ multFunctions a b = liftM2 (*) a b
 
 l'' :: Fractional a => a -> a -> a -> a
 l'' j m = \x -> (x - m)/(j - m)
-
-
-clean :: Eq a => a -> [a] -> [a]
-clean x xs = filter (\a -> a /= x) $ nub xs
-
-
