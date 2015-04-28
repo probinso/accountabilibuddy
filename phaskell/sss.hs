@@ -2,7 +2,7 @@ import System.Random
 import Data.List
 import Control.Monad
 
--- I don't really understand this code for random lists.
+-- code for random lists.
 defaultGen = mkStdGen 11
 randomList :: Int -> StdGen -> [Integer]
 randomList n = take n . unfoldr (Just . random)
