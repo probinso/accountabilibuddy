@@ -1,6 +1,7 @@
 import System.Random
 import Data.List
 import Control.Monad
+import Math.NumberTheory.Prime
 
 -- I don't really understand this code for random lists.
 defaultGen = mkStdGen 11
@@ -15,23 +16,24 @@ coeficients2poly :: (Num a) => [a] -> a -> a
 coeficients2poly cx x = foldl1 (\a b -> x*a + b) cx
 
 
-msg2poly :: Int -> Integer -> Integer -> Integer
-msg2poly degree message = coeficients2poly $ cs ++ [message]
-  where cs = randomList degree defaultGen
-
+msg2ppoly :: Int -> Integer -> Integer -> (Integer, Integer, Integer)
+msg2ppoly degree message = \x -> (x, coeficients2poly cs x `mod` prime, prime)
+  where
+    cs = randomList degree defaultGen ++ [message]
+    prime = nextPrime $ maximum cs
 
 -- Primary method to produce cryptographically shareable points from message
-msg2shares :: Int -> Int -> Integer -> [(Integer, Integer)]
-msg2shares k n m = map (\x -> (x, p x)) xs
+msg2shares :: Int -> Int -> Integer -> [(Integer, Integer, Integer)]
+msg2shares k n m = map p xs
   where
-    p = msg2poly (k - 1) m
+    p = msg2ppoly (k - 1) m
     xs = map fromIntegral [1..n]
 
 
-shares2points :: [(Integer, Integer)] -> [(Rational, Rational)]
+shares2points :: [(Integer, Integer, Integer)] -> [(Rational, Rational, Integer)]
 shares2points = map share2point
   where
-    share2point (a, b) = (fromIntegral a, fromIntegral b)
+    share2point (a, b, c) = (fromIntegral a, fromIntegral b, c)
 
 
 main =
@@ -39,10 +41,10 @@ main =
     k = 4
     n = 10
     shares = msg2shares k n 1234
-    message = points2message $ take k $ reverse $ shares2points shares
+    --message = points2message $ take k $ reverse $ shares2points shares
   in do
     print shares
-    print message
+    --print message
 
 
 points2message :: (Integral b, RealFrac a) => [(a, a)] -> b
