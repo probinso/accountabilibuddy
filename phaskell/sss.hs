@@ -3,7 +3,7 @@ import Data.List
 import Control.Monad
 import Math.NumberTheory.Prime
 
--- I don't really understand this code for random lists.
+-- code for random lists.
 defaultGen = mkStdGen 11
 randomList :: Int -> StdGen -> [Integer]
 randomList n = take n . unfoldr (Just . random)
