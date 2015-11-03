@@ -16,14 +16,14 @@ coeficients2poly :: (Num a) => [a] -> a -> a
 coeficients2poly cx x = foldl1 (\a b -> x*a + b) cx
 
 
-msg2ppoly :: Int -> Integer -> Integer -> (Integer, Integer, Integer)
+msg2ppoly :: Integer -> Integer -> Integer -> (Integer, Integer, Integer)
 msg2ppoly degree message = \x -> (x, coeficients2poly cs x `mod` prime, prime)
   where
     cs = randomList degree defaultGen ++ [message]
     prime = nextPrime $ maximum cs
 
 -- Primary method to produce cryptographically shareable points from message
-msg2shares :: Int -> Int -> Integer -> [(Integer, Integer, Integer)]
+msg2shares :: Integer -> Integer -> Integer -> [(Integer, Integer, Integer)]
 msg2shares k n m = map p xs
   where
     p = msg2ppoly (k - 1) m
@@ -41,7 +41,7 @@ main =
     k = 4
     n = 10
     shares = msg2shares k n 1234
-    --message = points2message $ take k $ reverse $ shares2points shares
+    message = points2message $ take k $ shuffleM $ shares2points shares
   in do
     print shares
     --print message
@@ -50,29 +50,23 @@ main =
 points2message :: (Integral b, RealFrac a) => [(a, a)] -> b
 points2message points = floor $ points2poly points 0
 
-
 points2poly :: (Eq b, Fractional b) => [(b, b)] -> b -> b
 points2poly points = \x -> foldr1 addFunctions ljs x
   where
     ljs = map (\p -> l p points) points
+    l point ps = 
+    let
+      yVal = snd point
+      j:mx = (fst point) : (map fst $ clean point ps)
+      l' j mx = foldr1 multFunctions $ map (l'' j) mx
+      l'' j m = \x -> (x - m)/(j - m)
+    in
+      \x -> yVal * (l' j mx) x
+
 
 addFunctions :: (Monad m, Num b) => m b -> m b -> m b
 addFunctions a b = liftM2 (+) a b
 
-
-l :: (Eq a, Fractional a) => (a, a) -> [(a, a)] -> a -> a
-l point ps = \x -> yVal * (l' j mx) x
-  where
-    yVal = snd point
-    j:mx = (fst point) : (map fst $ clean point ps)
-
-
-l' :: Fractional a => a -> [a] -> (a -> a)
-l' j mx = foldr1 multFunctions $ map (l'' j) mx
-
 multFunctions :: (Monad m, Num b) => m b -> m b -> m b
 multFunctions a b = liftM2 (*) a b
 
-
-l'' :: Fractional a => a -> a -> a -> a
-l'' j m = \x -> (x - m)/(j - m)
