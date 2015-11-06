@@ -13,28 +13,22 @@ clean :: Eq a => a -> [a] -> [a]
 clean x xs = filter (\a -> a /= x) $ nub xs
 
 -- this is horners method for computing polynomials
--- coeficients2poly :: (Num a) => [a] -> a -> a
+coeficients2poly :: (Num a) => [a] -> a -> a
 coeficients2poly cx x = foldl1 (\a b -> x*a + b) cx
 
 
--- msg2ppoly :: Integer -> Integer -> Integer -> (Integer, Integer, Integer)
+msg2ppoly :: Integer -> Integer -> Integer -> (Integer, Integer, Integer)
 msg2ppoly degree message = \x -> (x, coeficients2poly cs x `mod` prime, prime)
   where
     cs = randomList degree defaultGen ++ [message]
     prime = nextPrime $ maximum cs
 
 -- Primary method to produce cryptographically shareable points from message
--- msg2shares :: Integer -> Integer -> Integer -> [(Integer, Integer, Integer)]
+msg2shares :: Int -> Int -> Integer -> [(Integer, Integer, Integer)]
 msg2shares k n m = map p xs
   where
-    p = msg2ppoly (k - 1) m
+    p = msg2ppoly (fromIntegral (k - 1)) (fromIntegral m)
     xs = map fromIntegral [1..n]
-
-
--- shares2points :: [(Integer, Integer, Integer)] -> [(Rational, Rational, Integer)]
-shares2points = map share2point
-  where
-    share2point (a, b, c) = (fromIntegral a, fromIntegral b, fromIntegral c)
 
 
 main =
@@ -42,13 +36,19 @@ main =
     k = 4
     n = 10
     shares = msg2shares k n 1234
-    message = points2message $ take k $ shuffleM $ shares2points shares
+    points = take k $ shuffleM $ shares2points shares
+    --message = points2message $ take k $ shuffleM $ shares2points shares
   in do
     print shares
     --print message
 
+shares2points :: [(Integer, Integer, Integer)] -> [(Integer, Rational, Rational)]
+shares2points = map share2point
+  where
+    share2point (a, b, c) = (a, fromIntegral b, fromIntegral c)
 
--- points2message :: (Integral b, RealFrac a) => [(a, a)] -> b
+
+points2message :: (Integral b, RealFrac a) => [(a, a)] -> b
 points2message points = floor $ points2poly points 0
 
 points2poly :: (Eq b, Fractional b) => [(b, b)] -> b -> b
@@ -70,4 +70,3 @@ addFunctions a b = liftM2 (+) a b
 
 multFunctions :: (Monad m, Num b) => m b -> m b -> m b
 multFunctions a b = liftM2 (*) a b
-
